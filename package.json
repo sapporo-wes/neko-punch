@@ -1,0 +1,18 @@
+{
+  "name": "neko-punch",
+  "version": "1.0.0",
+  "description": "An execution interface, designed as a web component, for the effortless execution of workflows via Sapporo-WES",
+  "author": "Sapporo-WES Project Team (https://github.com/orgs/sapporo-wes/people)",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc",
+    "start": "web-dev-server --watch --node-resolve --port 8080"
+  },
+  "dependencies": {
+    "lit": "^2.7.5"
+  },
+  "devDependencies": {
+    "@web/dev-server": "^0.2.3",
+    "typescript": "^5.1.3"
+  }
+}
