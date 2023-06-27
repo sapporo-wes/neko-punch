@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
-    "start": "web-dev-server --watch --node-resolve --port 8080"
+    "start": "npm run build && web-dev-server --watch --node-resolve --port 8080"
   },
   "dependencies": {
     "lit": "^2.7.5"

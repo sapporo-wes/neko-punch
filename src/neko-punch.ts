@@ -1,17 +1,18 @@
-import { LitElement, html, css } from "lit";
+import { html, css, LitElement } from "lit";
+import { customElement, property } from "lit/decorators.js";
 
-class NekoPunch extends LitElement {
+@customElement("neko-punch")
+export class NekoPunch extends LitElement {
   static styles = css`
-    :host {
-      display: block;
-      padding: 16px;
-      color: var(--neko-punch-text-color, black);
+    p {
+      color: blue;
     }
   `;
 
+  @property()
+  name = "Somebody";
+
   render() {
-    return html` <p>Hello, Lit!FooBarBaz!</p> `;
+    return html`<p>Hello, ${this.name}!</p>`;
   }
 }
-
-customElements.define("neko-punch", NekoPunch);
