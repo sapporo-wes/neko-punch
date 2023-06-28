@@ -1,0 +1,55 @@
+{
+  "root": true,
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint", "import"],
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "indent": ["error", 2],
+    "quotes": ["error", "double"],
+    "semi": ["error", "never"],
+    "curly": ["error", "multi-line"],
+    "eqeqeq": ["error", "always"],
+    "no-trailing-spaces": "error",
+    "eol-last": ["error", "always"],
+    "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 1 }],
+    "no-var": "error",
+    "prefer-const": "error",
+    "comma-dangle": ["error", "never"],
+    "prefer-arrow-callback": "error",
+    "no-unused-vars": "warn",
+    "no-console": "warn",
+    "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
+    "keyword-spacing": ["error", { "before": true, "after": true }],
+    "space-infix-ops": "error",
+    "array-bracket-spacing": ["error", "never"],
+    "object-curly-spacing": ["error", "always"],
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index",
+          "object",
+          "type"
+        ],
+        "newlines-between": "always",
+        "alphabetize": { "order": "asc", "caseInsensitive": true }
+      }
+    ]
+  }
+}
