@@ -557,7 +557,10 @@ export class NekoPunch extends LitElement {
       .code-font {
         font-family: Menlo, Consolas, "DejaVu Sans Mono", Courier, monospace;
       }
-      ,
+      .select:not(.is-multiple):not(.is-loading)::after,
+      .navbar-link:not(.is-arrowless)::after {
+        margin-top: -2px;
+      }
     `,
   ]
 
@@ -660,6 +663,7 @@ export class NekoPunch extends LitElement {
                         <a
                           class="tag is-danger is-light"
                           @click=${() => this.deleteAttachment(i)}
+                          style="width: 36px;"
                         >
                           <svg viewBox="0 0 24 24" width="18" height="18">
                             <path
@@ -674,80 +678,90 @@ export class NekoPunch extends LitElement {
               `
             })}
           </div>
+
           <div
-            style="margin-bottom: 8px; display: flex; justify-content: flex-end;"
+            style="display: grid; grid-template-columns: 1fr 3fr 3fr 1fr; grid-gap: 20px; margin-bottom: 10px;"
           >
             <div
-              style="display: flex; justify-content: space-between; gap: 20px; max-width: 90%; flex-grow: 1;"
+              class="label"
+              style="align-self: center; margin-bottom: 0; margin-left: 40px; font-size: 14px; width: 80px;"
             >
-              <div class="file">
-                <label class="file-label">
-                  <input
-                    class="file-input is-small"
-                    type="file"
-                    @change="${this.attachFile}"
-                  />
-                  <span class="file-cta">
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="24"
-                      height="24"
-                      style="margin-right: 4px"
-                    >
-                      <path d="${mdiFileUploadOutline}" fill="#4a4a4a" />
-                    </svg>
-                    <span class="file-label">Select a file</span>
-                  </span>
-                </label>
-              </div>
-              <input
-                class="input is-info"
-                type="text"
-                placeholder="File Target"
-                .value="${this.wfAttUploadTarget}"
-                @input="${this.inputUploadFileTarget}"
-              />
-              <div style="max-width: 140px; min-width: 140px;">
-                <button
-                  class="button is-info is-light"
-                  @click="${this.addUploadFile}"
-                  style="height: 56px; width: 100%; box-sizing: border-box;"
-                >
-                  Attach
-                </button>
-              </div>
+              Local
             </div>
+            <div class="file">
+              <label class="file-label">
+                <input
+                  class="file-input"
+                  type="file"
+                  @change="${this.attachFile}"
+                />
+                <span class="file-cta" style="height: 24px;">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="24"
+                    height="24"
+                    style="margin-right: 4px"
+                  >
+                    <path d="${mdiFileUploadOutline}" fill="#4a4a4a" />
+                  </svg>
+                  <span class="file-label">Select a file</span>
+                </span>
+              </label>
+            </div>
+            <input
+              class="input is-info"
+              type="text"
+              placeholder="File Target"
+              .value="${this.wfAttUploadTarget}"
+              @input="${this.inputUploadFileTarget}"
+              style="box-sizing: border-box;"
+            />
+            <button
+              class="button is-info is-light"
+              @click="${this.addUploadFile}"
+              style="width: 100%; box-sizing: border-box;"
+            >
+              Add
+            </button>
           </div>
-          <div style="display: flex; justify-content: flex-end;">
+          <div
+            style="margin-left: 20px; padding-bottom: 10px; border-top: 1px solid #dbdbdb;"
+          ></div>
+          <div
+            style="display: grid; grid-template-columns: 1fr 3fr 3fr 1fr; grid-gap: 20px; align-items: center;"
+          >
             <div
-              style="display: flex; justify-content: space-between; gap: 20px; max-width: 90%; flex-grow: 1; border-top: 1px solid #dbdbdb; padding-top: 8px;"
+              class="label"
+              style="align-self: center; margin-bottom: 0; margin-left: 40px; font-size: 14px; width: 80px;"
             >
-              <input
-                class="input is-info"
-                type="text"
-                placeholder="File URL"
-                .value="${this.wfAttFetchUrl}"
-                @input="${this.inputFetchFileUrl}"
-              />
-              <input
-                class="input is-info"
-                type="text"
-                placeholder="File Target"
-                .value="${this.wfAttFetchTarget}"
-                @input="${this.inputFetchFileTarget}"
-              />
-              <div style="max-width: 140px; min-width: 140px;">
-                <button
-                  class="button is-info is-light"
-                  @click="${this.addFetchFile}"
-                  style="height: 56px; width: 100%; box-sizing: border-box;"
-                >
-                  Fetch
-                </button>
-              </div>
+              Remote
             </div>
+            <input
+              class="input is-info"
+              type="text"
+              placeholder="File URL"
+              .value="${this.wfAttFetchUrl}"
+              @input="${this.inputFetchFileUrl}"
+              style="box-sizing: border-box;"
+            />
+            <input
+              class="input is-info"
+              type="text"
+              placeholder="File Target"
+              .value="${this.wfAttFetchTarget}"
+              @input="${this.inputFetchFileTarget}"
+              style="box-sizing: border-box;"
+            />
+            <button
+              class="button is-info is-light"
+              @click="${this.addFetchFile}"
+              style="width: 100%; box-sizing: border-box;"
+            >
+              Add
+            </button>
           </div>
         </div>
+
         <div class="block">
           <label class="label">Workflow Parameter</label>
           <textarea
@@ -881,6 +895,7 @@ export class NekoPunch extends LitElement {
                     class="tag is-link"
                     href="${file.file_url}"
                     download="${file.file_name}"
+                    style="width: 36px;"
                   >
                     <svg viewBox="0 0 24 24" width="18" height="18">
                       <path d="${mdiDownloadOutline}" fill="#ffffff" />
@@ -936,7 +951,7 @@ export class NekoPunch extends LitElement {
           </div>
           <div
             class="header-details-container block"
-            style="margin-left: 10px; margin-right: 10px;"
+            style="margin-left: 20px; margin-right: 20px;"
           >
             <div class="header-details">
               <div class="header-detail-key">WES Location</div>
