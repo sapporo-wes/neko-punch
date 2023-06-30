@@ -286,7 +286,13 @@ export class NekoPunch extends LitElement {
         )
       if (wfParamsFile !== undefined) {
         fetch(wfParamsFile.url)
-          .then((res) => res.text())
+          .then((res) => {
+            if (res.ok) {
+              return res.text()
+            } else {
+              throw new Error()
+            }
+          })
           .then((text) => {
             this.wfParamsCache = text
             this.wfParams = text
@@ -310,7 +316,13 @@ export class NekoPunch extends LitElement {
         )
       if (wfEngineParamsFile !== undefined) {
         fetch(wfEngineParamsFile.url)
-          .then((res) => res.text())
+          .then((res) => {
+            if (res.ok) {
+              return res.text()
+            } else {
+              throw new Error()
+            }
+          })
           .then((text) => {
             this.wfEngineParamsCache = text
             this.wfEngineParams = text
@@ -465,20 +477,23 @@ export class NekoPunch extends LitElement {
     })
       .then((res) => {
         if (res.ok) {
-          res.json().then((json) => {
-            const runId = json.run_id
-            const run = { id: runId, name: this.runName }
-
-            this.latestRun = run
-            this.runs = [run, ...this.runs]
-            this.selectedRun = run
-            this.fetchRunLog(run)
-
-            localStorage.setItem(RUNS_STORAGE_KEY, JSON.stringify(this.runs))
-            this.initializeForm()
-            this.executeLoading = false
-          })
+          return res.json()
+        } else {
+          throw new Error()
         }
+      })
+      .then((json) => {
+        const runId = json.run_id
+        const run = { id: runId, name: this.runName }
+
+        this.latestRun = run
+        this.runs = [run, ...this.runs]
+        this.selectedRun = run
+        this.fetchRunLog(run)
+
+        localStorage.setItem(RUNS_STORAGE_KEY, JSON.stringify(this.runs))
+        this.initializeForm()
+        this.executeLoading = false
       })
       .catch((e) => {
         this.apiError = `Failed to execute workflow with the following error: ${e}`
@@ -497,32 +512,39 @@ export class NekoPunch extends LitElement {
   }
 
   private fetchRunLog(run: Run) {
-    fetch(`${this.wesLocation}/runs/${run.id}`).then((res) => {
-      if (res.ok) {
-        res.json().then((json) => {
-          const start_time = json.run_log?.start_time ?? ""
-          const end_time = json.run_log?.end_time ?? ""
-          const stdout =
-            typeof json.run_log?.stdout === "string"
-              ? json.run_log.stdout
-              : JSON.stringify(json.run_log.stdout, null, 2)
-          const stderr =
-            typeof json.run_log?.stderr === "string"
-              ? json.run_log.stderr
-              : JSON.stringify(json.run_log.stderr, null, 2)
-          this.runLogs[run.id] = {
-            workflow_params: json.request.workflow_params,
-            start_time,
-            end_time,
-            stdout,
-            stderr,
-            state: json.state,
-            outputs: json.outputs,
-          }
-          this.requestUpdate()
-        })
-      }
-    })
+    fetch(`${this.wesLocation}/runs/${run.id}`)
+      .then((res) => {
+        if (res.ok) {
+          return res.json()
+        } else {
+          throw new Error()
+        }
+      })
+      .then((json) => {
+        const start_time = json.run_log?.start_time ?? ""
+        const end_time = json.run_log?.end_time ?? ""
+        const stdout =
+          typeof json.run_log?.stdout === "string"
+            ? json.run_log.stdout
+            : JSON.stringify(json.run_log.stdout, null, 2)
+        const stderr =
+          typeof json.run_log?.stderr === "string"
+            ? json.run_log.stderr
+            : JSON.stringify(json.run_log.stderr, null, 2)
+        this.runLogs[run.id] = {
+          workflow_params: json.request.workflow_params,
+          start_time,
+          end_time,
+          stdout,
+          stderr,
+          state: json.state,
+          outputs: json.outputs,
+        }
+        this.requestUpdate()
+      })
+      .catch((e) => {
+        this.apiError = `Failed to fetch run log with the following error: ${e}`
+      })
   }
 
   get selectedRunLog() {
@@ -711,7 +733,7 @@ export class NekoPunch extends LitElement {
             <input
               class="input is-info"
               type="text"
-              placeholder="File Target"
+              placeholder="Target Path"
               .value="${this.wfAttUploadTarget}"
               @input="${this.inputUploadFileTarget}"
               style="box-sizing: border-box;"
@@ -739,7 +761,7 @@ export class NekoPunch extends LitElement {
             <input
               class="input is-info"
               type="text"
-              placeholder="File URL"
+              placeholder="File URL (e.g., https://...)"
               .value="${this.wfAttFetchUrl}"
               @input="${this.inputFetchFileUrl}"
               style="box-sizing: border-box;"
@@ -747,7 +769,7 @@ export class NekoPunch extends LitElement {
             <input
               class="input is-info"
               type="text"
-              placeholder="File Target"
+              placeholder="Target Path"
               .value="${this.wfAttFetchTarget}"
               @input="${this.inputFetchFileTarget}"
               style="box-sizing: border-box;"
@@ -930,9 +952,15 @@ export class NekoPunch extends LitElement {
     `
   }
 
-  errorNotification() {
+  globalErrorNotification() {
     return html`
       <div class="notification is-danger is-light">${this.globalError}</div>
+    `
+  }
+
+  apiErrorNotification() {
+    return html`
+      <div class="notification is-danger is-light">${this.apiError}</div>
     `
   }
 
@@ -982,7 +1010,10 @@ export class NekoPunch extends LitElement {
               </div>
             </div>
           </div>
-          ${this.globalError ? this.errorNotification() : this.contentRender()}
+          ${this.globalError
+            ? this.globalErrorNotification()
+            : this.contentRender()}
+          ${this.apiError ? this.apiErrorNotification() : html``}
         </div>
       </div>
     `
