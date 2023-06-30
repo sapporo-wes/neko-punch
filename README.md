@@ -37,9 +37,39 @@ Load the `neko-punch.js` in the HTML head tag and write the `neko-punch` tag ins
   - Choose the workflow engine you want to run on Sapporo-WES (Check the executable workflow engines with `GET /service-info`)
   - By default, it automatically selects the workflow engine from the workflow type
 
+## Getting Started
+
+You will need Sapporo-WES to run Neko-Punch.
+
+```bash
+$ curl -O https://raw.githubusercontent.com/sapporo-wes/sapporo-service/main/docker-compose.yml
+$ docker-compose up -d
+$ curl localhost:1122/service-info
+{"auth_instructions_url":"https://github.com/sapporo-wes/sapporo-service", ...}
+```
+
+After setting up Sapporo-WES, the below command will clone the Neko-Punch repository, install dependencies, build the web component, start a development server.
+Then you can access Neko-Punch on your local machine at http://localhost:8080
+
+```bash
+# Clone this repository
+$ git clone https://github.com/sapporo-wes/neko-punch.git && cd neko-punch
+
+# Install dependencies
+$ npm ci
+
+# Build a web component to dist/
+$ npm run build
+
+# Run a development server
+$ npm run serve
+
+# Access to http://localhost:8080
+```
+
 ## Development
 
-Using Node.js v18.16.1.
+Node.js v18 or higher is recommended.
 
 ```bash
 # Install dependencies
