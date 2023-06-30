@@ -7,8 +7,6 @@ It enables you to embed the workflow execution interface effortlessly onto vario
 
 ## Embedding Instructions
 
-TODO update js link
-
 Load the `neko-punch.js` in the HTML head tag and write the `neko-punch` tag inside the body tag.
 
 ```html

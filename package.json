@@ -1,6 +1,6 @@
 {
   "name": "neko-punch",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "An execution interface, designed as a web component, for the effortless execution of workflows via GA4GH WES API",
   "author": "Sapporo-WES Project Team (https://github.com/orgs/sapporo-wes/people)",
   "license": "Apache-2.0",
