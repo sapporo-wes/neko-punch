@@ -16,7 +16,7 @@ Load the `neko-punch.js` in the HTML head tag and write the `neko-punch` tag ins
 <html lang="en">
   <head>
     <script
-      src="https://github.com/sapporo-wes/neko-punch/releases/latest/download/neko-punch.js"
+      src="https://sapporo-wes.github.io/neko-punch/dist-prod/neko-punch.js"
       type="module"
     ></script>
   </head>
