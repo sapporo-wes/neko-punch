@@ -54,6 +54,12 @@ $ npm run serve
 # Access to http://localhost:8080
 ```
 
+### Release
+
+```bash
+$ bash release.sh <version>
+```
+
 ## License
 
 This project is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) License.
