@@ -1,7 +1,7 @@
 {
   "name": "neko-punch",
   "version": "1.0.0",
-  "description": "An execution interface, designed as a web component, for the effortless execution of workflows via Sapporo-WES",
+  "description": "An execution interface, designed as a web component, for the effortless execution of workflows via GA4GH WES API",
   "author": "Sapporo-WES Project Team (https://github.com/orgs/sapporo-wes/people)",
   "license": "Apache-2.0",
   "scripts": {
@@ -10,6 +10,7 @@
     "serve": "web-dev-server --watch --node-resolve --port 8080"
   },
   "dependencies": {
+    "@mdi/js": "^7.2.96",
     "bulma": "^0.9.4",
     "js-yaml": "^4.1.0",
     "lit": "^2.7.5"

@@ -1,5 +1,12 @@
+import {
+  mdiRocketLaunchOutline,
+  mdiChartBoxOutline,
+  mdiDeleteOutline,
+  mdiFileUploadOutline,
+  mdiDownloadOutline,
+} from "@mdi/js"
 import jsyaml from "js-yaml"
-import { html, LitElement } from "lit"
+import { html, LitElement, css } from "lit"
 import { customElement, property, state } from "lit/decorators.js"
 
 import { bulmaStyles } from "./bulma"
@@ -12,6 +19,8 @@ type WfAttachment = {
   type: "fetch" | "upload"
   url?: string
   file?: File
+  secondary: boolean
+  other: boolean
 }
 
 type Run = {
@@ -45,8 +54,6 @@ type RunLog = {
 // === main ===
 @customElement("neko-punch")
 export class NekoPunch extends LitElement {
-  static styles = [bulmaStyles]
-
   // === attributes ===
   @property({ attribute: "wes-location", type: String })
   wesLocation?: string
@@ -81,7 +88,7 @@ export class NekoPunch extends LitElement {
   }
 
   get wfVersion(): string {
-    return this.yevisMetadata?.workflow?.version ?? ""
+    return this.yevisMetadata?.workflow?.language?.version ?? ""
   }
 
   get wfLicense(): string {
@@ -95,8 +102,6 @@ export class NekoPunch extends LitElement {
   get wfType(): string {
     return this.yevisMetadata?.workflow?.language?.type ?? "CWL"
   }
-
-  // TODO license, wf name, version, readme
 
   get wfTypeVersion(): string {
     return this.yevisMetadata?.workflow?.language?.version ?? "v1.0"
@@ -258,11 +263,15 @@ export class NekoPunch extends LitElement {
         url: file.url,
         target: file.target,
         type: "fetch",
+        secondary: true,
+        other: false,
       })),
       ...otherFiles.map((file: any) => ({
         url: file.url,
         target: file.target,
         type: "fetch",
+        secondary: false,
+        other: true,
       })),
     ]
   }
@@ -340,6 +349,11 @@ export class NekoPunch extends LitElement {
     this.runName = target.value
   }
 
+  private deleteAttachment(ind: number) {
+    // Delete the workflow attachment
+    this.wfAttachments = this.wfAttachments.filter((_, i) => i !== ind)
+  }
+
   private attachFile(e: Event) {
     // Attach a upload file as a workflow attachment
     const target = e.target as HTMLInputElement
@@ -366,6 +380,8 @@ export class NekoPunch extends LitElement {
           target: this.wfAttUploadTarget,
           type: "upload",
           file: this.wfAttUploadFile,
+          secondary: false,
+          other: false,
         },
       ]
       this.wfAttUploadFile = undefined
@@ -397,6 +413,8 @@ export class NekoPunch extends LitElement {
           target: this.wfAttFetchTarget,
           type: "fetch",
           url: this.wfAttFetchUrl,
+          secondary: false,
+          other: false,
         },
       ]
       this.wfAttFetchUrl = ""
@@ -511,6 +529,38 @@ export class NekoPunch extends LitElement {
     return this.runLogs[this.selectedRun?.id ?? ""]
   }
 
+  // === styles ===
+  static styles = [
+    bulmaStyles,
+    css`
+      :host {
+        font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+          "BIZ UDPGothic", "Helvetica Neue", Arial, Meiryo, sans-serif;
+      }
+      .header-details {
+        display: grid;
+        grid-template-columns: 1fr 5fr;
+        gap: 20px;
+        margin-bottom: 10px;
+      }
+      .header-detail-key {
+        font-weight: bold;
+        text-align: left;
+        align-self: start;
+      }
+      .header-detail-value {
+        word-wrap: break-word;
+      }
+      .attach-child:hover {
+        background-color: hsl(219, 70%, 96%);
+      }
+      .code-font {
+        font-family: Menlo, Consolas, "DejaVu Sans Mono", Courier, monospace;
+      }
+      ,
+    `,
+  ]
+
   // === render ===
   contentRender() {
     return html`
@@ -520,13 +570,47 @@ export class NekoPunch extends LitElement {
             class="${this.activeTab === "Execute" ? "is-active" : ""}"
             @click="${() => this.changeTab("Execute")}"
           >
-            <a>Execute</a>
+            <a style="width: 90px">
+              <span style="padding-right: 4px; height: 18px;">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path
+                    d="${mdiRocketLaunchOutline}"
+                    fill="${this.activeTab === "Execute"
+                      ? "hsl(217, 71%, 53%)"
+                      : "#4a4a4a"}"
+                  />
+                </svg>
+              </span>
+              <span
+                style="color: ${this.activeTab === "Execute"
+                  ? "hsl(217, 71%, 53%)"
+                  : "#4a4a4a"}"
+                >Execute</span
+              >
+            </a>
           </li>
           <li
             class="${this.activeTab === "Result" ? "is-active" : ""}"
             @click="${() => this.changeTab("Result")}"
           >
-            <a>Result</a>
+            <a style="width: 90px">
+              <span style="padding-right: 4px; height: 18px;">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path
+                    d="${mdiChartBoxOutline}"
+                    fill="${this.activeTab === "Result"
+                      ? "hsl(217, 71%, 53%)"
+                      : "#4a4a4a"}"
+                  />
+                </svg>
+              </span>
+              <span
+                style="color: ${this.activeTab === "Result"
+                  ? "hsl(217, 71%, 53%)"
+                  : "#4a4a4a"}"
+                >Result</span
+              >
+            </a>
           </li>
         </ul>
       </div>
@@ -538,112 +622,295 @@ export class NekoPunch extends LitElement {
 
   executeTabRender() {
     return html`
-      <div class="content">
-        <div>${JSON.stringify(this.wfAttachments, null, 2)}</div>
-
+      <div class="block" style="margin-left: 20px; margin-right: 20px;">
+        <div class="block">
+          <label class="label">Run Name</label>
           <input
             class="input is-info"
             type="text"
-            placeholder="run name"
+            placeholder="Run Name"
             .value="${this.runName}"
             @input="${this.inputRunName}"
-          />
-
-          <div>${this.wfEngine}</div>
-
-          <div class="file has-name">
-            <label class="file-label">
-              <input
-                class="file-input"
-                type="file"
-                @change="${this.attachFile}"
-              />
-              <span class="file-cta">
-                <span class="file-label"> Choose a file… </span>
-              </span>
-              <span class="file-name">${this.wfAttUploadFileName}</span>
-            </label>
-          </div>
-          <input
-            class="input is-info"
-            type="text"
-            placeholder="wf attach target"
-            .value="${this.wfAttUploadTarget}"
-            @input="${this.inputUploadFileTarget}"
+            style="box-sizing: border-box; max-width: 100%;"
           />
         </div>
-        <button class="button is-link is-light" @click="${this.addUploadFile}">
-          Add upload file
-        </button>
 
-        <input
-          class="input is-info"
-          type="text"
-          placeholder="wf attach URL"
-          .value="${this.wfAttFetchUrl}"
-          @input="${this.inputFetchFileUrl}"
-        />
-        <input
-          class="input is-info"
-          type="text"
-          placeholder="wf attach target"
-          .value="${this.wfAttFetchTarget}"
-          @input="${this.inputFetchFileTarget}"
-        />
-        <button class="button is-link is-light" @click="${this.addFetchFile}">
-          Add fetch file
-        </button>
-
-        <textarea class="textarea is-info" placeholder="Info textarea" .value="${
-          this.wfParams
-        }" @input="${this.inputWfParams}"></textarea>
-
-        <textarea class="textarea is-info" placeholder="Info textarea" .value="${
-          this.wfEngineParams
-        }"></textarea>
-
-        <button class="button is-link is-light" @click="${
-          this.executeWorkflow
-        }">Run</button>
-
-        <div>Run ID: ${this.latestRun}</div>
+        <div class="block flex-columns">
+          <label class="label">Workflow Attachment</label>
+          <div
+            class="block"
+            style="display: flex-columns; border: 1px solid #dbdbdb; border-radius: 4px;"
+          >
+            ${this.wfAttachments.map((file, i) => {
+              return html`
+                <div
+                  class="attach-child code-font"
+                  style="padding: 8px 12px; display: flex; justify-content: space-between;"
+                >
+                  <div>
+                    ${file.target}
+                    ${file.other
+                      ? html`<span class="tag is-light is-rounded"
+                          >Pre-Defined Test Data</span
+                        >`
+                      : html``}
+                  </div>
+                  ${!file.secondary
+                    ? html`
+                        <a
+                          class="tag is-danger is-light"
+                          @click=${() => this.deleteAttachment(i)}
+                        >
+                          <svg viewBox="0 0 24 24" width="18" height="18">
+                            <path
+                              d="${mdiDeleteOutline}"
+                              fill="hsl(348, 86%, 43%)"
+                            />
+                          </svg>
+                        </a>
+                      `
+                    : html``}
+                </div>
+              `
+            })}
+          </div>
+          <div
+            style="margin-bottom: 8px; display: flex; justify-content: flex-end;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; gap: 20px; max-width: 90%; flex-grow: 1;"
+            >
+              <div class="file">
+                <label class="file-label">
+                  <input
+                    class="file-input is-small"
+                    type="file"
+                    @change="${this.attachFile}"
+                  />
+                  <span class="file-cta">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="24"
+                      height="24"
+                      style="margin-right: 4px"
+                    >
+                      <path d="${mdiFileUploadOutline}" fill="#4a4a4a" />
+                    </svg>
+                    <span class="file-label">Select a file</span>
+                  </span>
+                </label>
+              </div>
+              <input
+                class="input is-info"
+                type="text"
+                placeholder="File Target"
+                .value="${this.wfAttUploadTarget}"
+                @input="${this.inputUploadFileTarget}"
+              />
+              <div style="max-width: 140px; min-width: 140px;">
+                <button
+                  class="button is-info is-light"
+                  @click="${this.addUploadFile}"
+                  style="height: 56px; width: 100%; box-sizing: border-box;"
+                >
+                  Attach
+                </button>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <div
+              style="display: flex; justify-content: space-between; gap: 20px; max-width: 90%; flex-grow: 1; border-top: 1px solid #dbdbdb; padding-top: 8px;"
+            >
+              <input
+                class="input is-info"
+                type="text"
+                placeholder="File URL"
+                .value="${this.wfAttFetchUrl}"
+                @input="${this.inputFetchFileUrl}"
+              />
+              <input
+                class="input is-info"
+                type="text"
+                placeholder="File Target"
+                .value="${this.wfAttFetchTarget}"
+                @input="${this.inputFetchFileTarget}"
+              />
+              <div style="max-width: 140px; min-width: 140px;">
+                <button
+                  class="button is-info is-light"
+                  @click="${this.addFetchFile}"
+                  style="height: 56px; width: 100%; box-sizing: border-box;"
+                >
+                  Fetch
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="block">
+          <label class="label">Workflow Parameter</label>
+          <textarea
+            class="textarea is-info code-font"
+            placeholder="Workflow Parameter"
+            rows="14"
+            .value="${this.wfParams}"
+            @input="${this.inputWfParams}"
+            style="box-sizing: border-box; max-width: 100%;"
+          ></textarea>
+        </div>
+        <div
+          class="block"
+          style="display: flex; justify-content: flex-end; align-items: center;"
+        >
+          ${this.latestRun !== undefined
+            ? html`<div
+                class="label"
+                style="margin-bottom: 0; margin-right: 20px;"
+              >
+                Executed with Run ID: ${this.latestRun?.id}
+              </div>`
+            : html``}
+          <button
+            class="button is-info ${this.executeLoading ? "is-loading" : ""}"
+            @click="${this.executeWorkflow}"
+          >
+            ${this.executeLoading
+              ? html``
+              : html`
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="24"
+                    height="24"
+                    style="padding-right: 8px;"
+                  >
+                    <path d="${mdiRocketLaunchOutline}" fill="#ffffff" />
+                  </svg>
+                `}
+            Execute
+          </button>
+        </div>
       </div>
     `
   }
 
   resultTabRender() {
     return html`
-      <div class="content">
-        <div class="select">
-          <select
-            .value="${this.selectedRun?.name}"
-            @change="${this.selectRun}"
+      <div class="block" style="margin-left: 20px; margin-right: 20px;">
+        <div class="block" style="display: flex; align-items: center;">
+          <div class="select">
+            <select
+              .value="${this.selectedRun?.name}"
+              @change="${this.selectRun}"
+              style="boder-sizing: border-box;"
+            >
+              ${this.runs.map((run) => html`<option>${run.name}</option>`)}
+            </select>
+          </div>
+          <div
+            style="display: flex; height: 56px; padding-top: 16px; margin-left: 20px;"
           >
-            ${this.runs.map((run) => html`<option>${run.name}</option>`)}
-          </select>
+            <div style="align-self: center;">
+              <span
+                class="tag is-medium ${this.selectedRunLog?.state === "COMPLETE"
+                  ? "is-success"
+                  : ["QUEUED", "INITIALIZING", "RUNNING", "PAUSED"].includes(
+                      this.selectedRunLog?.state
+                    )
+                  ? "is-link"
+                  : [
+                      "EXECUTOR_ERROR",
+                      "SYSTEM_ERROR",
+                      "CANCELED",
+                      "CANCELING",
+                    ].includes(this.selectedRunLog?.state)
+                  ? "is-danger"
+                  : "is-light"}"
+                >${this.selectedRunLog?.state}</span
+              >
+            </div>
+            <div
+              class="label"
+              style="margin-left: 20px; align-self: center; margin-bottom: 0; margin-right: 10px;"
+            >
+              Duration
+            </div>
+            ${this.selectedRunLog?.start_time !== ""
+              ? html`
+                  <div style="align-self: center;">
+                    <span class="tag"
+                      >${this.selectedRunLog.start_time
+                        .replace("-", "/")
+                        .replace("T", " ")}</span
+                    >
+                  </div>
+                `
+              : html``}
+            ${this.selectedRunLog?.end_time !== ""
+              ? html`
+                  <div style="align-self: center;">
+                    <span
+                      style="font-size: 16px; margin-left: 10px; margin-right: 8px;"
+                      >-</span
+                    >
+                    <span class="tag"
+                      >${this.selectedRunLog.end_time
+                        .replace("-", "/")
+                        .replace("T", " ")}</span
+                    >
+                  </div>
+                `
+              : html``}
+          </div>
         </div>
-        <div>stdout</div>
-        <pre>${this.selectedRunLog?.stdout}</pre>
-        <div>stderr</div>
-        <pre>${this.selectedRunLog?.stderr}</pre>
-        <div>outputs</div>
-        <ul>
-          ${this.selectedRunLog?.outputs.map(
-            (file) => html`
-              <li>
-                <a href="${file.file_url}" download="${file.file_name}"
-                  >${file.file_name}</a
+        <div class="block">
+          <label class="label">Output</label>
+
+          <div
+            class="block"
+            style="display: flex-columns; border: 1px solid #dbdbdb; border-radius: 4px;"
+          >
+            ${this.selectedRunLog?.outputs.map((file, i) => {
+              return html`
+                <div
+                  class="attach-child code-font"
+                  style="padding: 8px 12px; display: flex; justify-content: space-between;"
                 >
-              </li>
-            `
-          )}
-        </ul>
-        <div>state</div>
-        <pre>${this.selectedRunLog?.state}</pre>
-        <div>start_time</div>
-        <pre>${this.selectedRunLog?.start_time}</pre>
-        <div>end_time</div>
-        <pre>${this.selectedRunLog?.end_time}</pre>
+                  ${file.file_name}
+                  <a
+                    class="tag is-link"
+                    href="${file.file_url}"
+                    download="${file.file_name}"
+                  >
+                    <svg viewBox="0 0 24 24" width="18" height="18">
+                      <path d="${mdiDownloadOutline}" fill="#ffffff" />
+                    </svg>
+                  </a>
+                </div>
+              `
+            })}
+          </div>
+        </div>
+        <div class="block">
+          <label class="label">Stdout</label>
+          <textarea
+            class="textarea is-info code-font"
+            rows="20"
+            .value="${this.selectedRunLog?.stdout}"
+            style="box-sizing: border-box; max-width: 100%; font-size: 12px;"
+            readonly
+          ></textarea>
+        </div>
+        <div class="block">
+          <label class="label">Stderr</label>
+          <textarea
+            class="textarea is-info code-font"
+            rows="20"
+            .value="${this.selectedRunLog?.stderr}"
+            style="box-sizing: border-box; max-width: 100%; font-size: 12px;"
+            readonly
+          ></textarea>
+        </div>
       </div>
     `
   }
@@ -656,19 +923,52 @@ export class NekoPunch extends LitElement {
 
   render() {
     return html`
-      <div class="container box">
-        <h1 class="title">Neko-Punch!! 🐈👊</h1>
-        <p class="subtitle">
-          An execution interface, designed as a web component, for the
-          effortless execution of workflows via Sapporo-WES.
-        </p>
-        <div>Sapporo-WES location: <a>${this.wesLocation}</a></div>
-        <div>Yevis Metadata URL: <a>${this.yevisMetadataUrl}</a></div>
-        <div>workflow name: ${this.wfName}</div>
-        <div>wfVersion: ${this.wfVersion}</div>
-        <div>wfLicense: ${this.wfLicense}</div>
-        <div>wfReadme: ${this.wfReadme}</div>
-        ${this.globalError ? this.errorNotification() : this.contentRender()}
+      <div class="box" style="margin: 0 auto; border-radius: 12px;">
+        <div style="margin: 20px;">
+          <div class="content block">
+            <h1 class="title">Neko-Punch 🐈👊</h1>
+            <div class="block">
+              <p class="subtitle">
+                An execution interface, designed as a web component, for the
+                effortless execution of workflows via GA4GH WES API.
+              </p>
+            </div>
+          </div>
+          <div
+            class="header-details-container block"
+            style="margin-left: 10px; margin-right: 10px;"
+          >
+            <div class="header-details">
+              <div class="header-detail-key">WES Location</div>
+              <div class="header-detail-value">
+                <a href="${this.wesLocation}">${this.wesLocation}</a>
+              </div>
+            </div>
+            <div class="header-details">
+              <div class="header-detail-key">Yevis Metadata URL</div>
+              <div class="header-detail-value">
+                <a href="${this.yevisMetadataUrl}">${this.yevisMetadataUrl}</a>
+              </div>
+            </div>
+            <div class="header-details">
+              <div class="header-detail-key">Workflow Name</div>
+              <div class="header-detail-value">
+                ${this.wfName} (${this.wfVersion})
+              </div>
+            </div>
+            <div class="header-details">
+              <div class="header-detail-key">Workflow License</div>
+              <div class="header-detail-value">${this.wfLicense}</div>
+            </div>
+            <div class="header-details">
+              <div class="header-detail-key">Workflow Docs</div>
+              <div class="header-detail-value">
+                <a href="${this.wfReadme}">${this.wfReadme}</a>
+              </div>
+            </div>
+          </div>
+          ${this.globalError ? this.errorNotification() : this.contentRender()}
+        </div>
       </div>
     `
   }
