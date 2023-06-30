@@ -7,6 +7,7 @@
   "scripts": {
     "build": "rollup -c",
     "build:watch": "rollup -c --watch",
+    "build:prod": "rollup -c -o dist-prod/neko-punch.js",
     "serve": "web-dev-server --watch --node-resolve --port 8080"
   },
   "dependencies": {

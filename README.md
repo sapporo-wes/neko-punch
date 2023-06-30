@@ -15,7 +15,10 @@ Load the `neko-punch.js` in the HTML head tag and write the `neko-punch` tag ins
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <script src="/dist/neko-punch.js" type="module"></script>
+    <script
+      src="https://github.com/sapporo-wes/neko-punch/releases/latest/download/neko-punch.js"
+      type="module"
+    ></script>
   </head>
   <body>
     <neko-punch

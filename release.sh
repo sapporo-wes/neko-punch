@@ -26,8 +26,11 @@ fi
 echo "Rewrite files."
 sed -i "s/\"version\": \"$PREV_VERSION\"/\"version\": \"$NEW_VERSION\"/g" package.json
 
+echo "Build dist js"
+npm run build:prod
+
 echo "Commit and push."
-git add package.json
+git add package.json dist-prod/neko-punch.js
 git commit -m "Update version to $NEW_VERSION"
 git push origin main
 
