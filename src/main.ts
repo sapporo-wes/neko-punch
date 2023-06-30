@@ -547,6 +547,18 @@ export class NekoPunch extends LitElement {
       })
   }
 
+  private removeRun(run: Run) {
+    if (run.id === this.latestRun?.id) {
+      this.latestRun = undefined
+    }
+    this.runs = this.runs.filter((r) => r.id !== run.id)
+    const latestRun = this.runs[0]
+    this.selectedRun = latestRun
+    this.fetchRunLog(latestRun)
+
+    localStorage.setItem(RUNS_STORAGE_KEY, JSON.stringify(this.runs))
+  }
+
   get selectedRunLog() {
     return this.runLogs[this.selectedRun?.id ?? ""]
   }
@@ -833,100 +845,124 @@ export class NekoPunch extends LitElement {
   resultTabRender() {
     return html`
       <div class="block" style="margin-left: 20px; margin-right: 20px;">
-        <div class="block" style="display: flex; align-items: center;">
-          <div class="select">
-            <select
-              .value="${this.selectedRun?.name}"
-              @change="${this.selectRun}"
-              style="boder-sizing: border-box;"
-            >
-              ${this.runs.map((run) => html`<option>${run.name}</option>`)}
-            </select>
-          </div>
-          <div
-            style="display: flex; height: 56px; padding-top: 16px; margin-left: 20px;"
-          >
-            <div style="align-self: center;">
-              <span
-                class="tag is-medium ${this.selectedRunLog?.state === "COMPLETE"
-                  ? "is-success"
-                  : ["QUEUED", "INITIALIZING", "RUNNING", "PAUSED"].includes(
-                      this.selectedRunLog?.state
-                    )
-                  ? "is-link"
-                  : [
-                      "EXECUTOR_ERROR",
-                      "SYSTEM_ERROR",
-                      "CANCELED",
-                      "CANCELING",
-                    ].includes(this.selectedRunLog?.state)
-                  ? "is-danger"
-                  : "is-light"}"
-                >${this.selectedRunLog?.state}</span
+        <div
+          class="block"
+          style="display: flex; justify-content: space-between;"
+        >
+          <div style="display: flex; align-items: center;">
+            <div class="select">
+              <select
+                .value="${this.selectedRun?.name}"
+                @change="${this.selectRun}"
+                style="boder-sizing: border-box;"
               >
+                ${this.runs.map((run) => html`<option>${run.name}</option>`)}
+              </select>
             </div>
             <div
-              class="label"
-              style="margin-left: 20px; align-self: center; margin-bottom: 0; margin-right: 10px;"
+              style="display: flex; height: 56px; padding-top: 16px; margin-left: 20px;"
             >
-              Duration
+              <div style="align-self: center;">
+                <span
+                  class="tag is-medium ${this.selectedRunLog?.state ===
+                  "COMPLETE"
+                    ? "is-success"
+                    : ["QUEUED", "INITIALIZING", "RUNNING", "PAUSED"].includes(
+                        this.selectedRunLog?.state
+                      )
+                    ? "is-link"
+                    : [
+                        "EXECUTOR_ERROR",
+                        "SYSTEM_ERROR",
+                        "CANCELED",
+                        "CANCELING",
+                      ].includes(this.selectedRunLog?.state)
+                    ? "is-danger"
+                    : "is-light"}"
+                  >${this.selectedRunLog?.state}</span
+                >
+              </div>
+              <div
+                class="label"
+                style="margin-left: 20px; align-self: center; margin-bottom: 0; margin-right: 10px;"
+              >
+                Duration
+              </div>
+              ${this.selectedRunLog?.start_time
+                ? html`
+                    <div style="align-self: center;">
+                      <span class="tag"
+                        >${this.selectedRunLog.start_time
+                          .replace("-", "/")
+                          .replace("T", " ")}</span
+                      >
+                    </div>
+                  `
+                : html``}
+              ${this.selectedRunLog?.end_time
+                ? html`
+                    <div style="align-self: center;">
+                      <span
+                        style="font-size: 16px; margin-left: 10px; margin-right: 8px;"
+                        >-</span
+                      >
+                      <span class="tag"
+                        >${this.selectedRunLog.end_time
+                          .replace("-", "/")
+                          .replace("T", " ")}</span
+                      >
+                    </div>
+                  `
+                : html``}
             </div>
-            ${this.selectedRunLog?.start_time !== ""
-              ? html`
-                  <div style="align-self: center;">
-                    <span class="tag"
-                      >${this.selectedRunLog.start_time
-                        .replace("-", "/")
-                        .replace("T", " ")}</span
-                    >
-                  </div>
-                `
-              : html``}
-            ${this.selectedRunLog?.end_time !== ""
-              ? html`
-                  <div style="align-self: center;">
-                    <span
-                      style="font-size: 16px; margin-left: 10px; margin-right: 8px;"
-                      >-</span
-                    >
-                    <span class="tag"
-                      >${this.selectedRunLog.end_time
-                        .replace("-", "/")
-                        .replace("T", " ")}</span
-                    >
-                  </div>
-                `
-              : html``}
+          </div>
+          <div style="display: flex; align-items: center; padding-top: 16px; ">
+            <button
+              class="button is-link is-light"
+              style="box-sizing: border-box; margin-right: 20px;"
+              @click="${() => this.fetchRunLog(this.selectedRun as Run)}"
+            >
+              Reload
+            </button>
+            <button
+              class="button is-danger is-light"
+              style="box-sizing: border-box;"
+              @click="${() => this.removeRun(this.selectedRun as Run)}"
+            >
+              Remove
+            </button>
           </div>
         </div>
+
         <div class="block">
           <label class="label">Output</label>
-
-          <div
-            class="block"
-            style="display: flex-columns; border: 1px solid #dbdbdb; border-radius: 4px;"
-          >
-            ${this.selectedRunLog?.outputs.map((file, i) => {
-              return html`
-                <div
-                  class="attach-child code-font"
-                  style="padding: 8px 12px; display: flex; justify-content: space-between;"
-                >
-                  ${file.file_name}
-                  <a
-                    class="tag is-link"
-                    href="${file.file_url}"
-                    download="${file.file_name}"
-                    style="width: 36px;"
-                  >
-                    <svg viewBox="0 0 24 24" width="18" height="18">
-                      <path d="${mdiDownloadOutline}" fill="#ffffff" />
-                    </svg>
-                  </a>
-                </div>
-              `
-            })}
-          </div>
+          ${this.selectedRunLog?.outputs
+            ? html` <div
+                class="block"
+                style="display: flex-columns; border: 1px solid #dbdbdb; border-radius: 4px;"
+              >
+                ${this.selectedRunLog?.outputs?.map((file) => {
+                  return html`
+                    <div
+                      class="attach-child code-font"
+                      style="padding: 8px 12px; display: flex; justify-content: space-between;"
+                    >
+                      ${file.file_name}
+                      <a
+                        class="tag is-link"
+                        href="${file.file_url}"
+                        download="${file.file_name}"
+                        style="width: 36px;"
+                      >
+                        <svg viewBox="0 0 24 24" width="18" height="18">
+                          <path d="${mdiDownloadOutline}" fill="#ffffff" />
+                        </svg>
+                      </a>
+                    </div>
+                  `
+                })}
+              </div>`
+            : html``}
         </div>
         <div class="block">
           <label class="label">Stdout</label>
