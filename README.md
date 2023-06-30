@@ -41,6 +41,8 @@ Load the `neko-punch.js` in the HTML head tag and write the `neko-punch` tag ins
 
 ## Development
 
+Using Node.js v18.16.1.
+
 ```bash
 # Install dependencies
 $ npm install
