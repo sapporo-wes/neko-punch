@@ -5,7 +5,15 @@
 Neko-Punch is a web component designed to execute workflows with ease via [GA4GH WES API](https://github.com/ga4gh/workflow-execution-service-schemas).
 It enables you to embed the workflow execution interface effortlessly onto various pages, such as database pages, paper pages, and so on.
 
-<img width="800" alt="screenshot" src="https://github.com/sapporo-wes/neko-punch/assets/26019402/3233f3ab-1ad7-4a7d-b748-42fdbfbabad4">
+## Screenshots
+
+Workflow execution
+
+<img width="800" alt="screenshot_1" src="https://github.com/sapporo-wes/neko-punch/assets/26019402/248f65c8-ffb7-472b-a0bd-c25c393cfdca">
+
+Browse execution results
+
+<img width="800" alt="screenshot_2" src="https://github.com/sapporo-wes/neko-punch/assets/26019402/b46c2454-c508-4f98-9c72-4f1a009da7d5">
 
 ## Embedding Instructions
 
